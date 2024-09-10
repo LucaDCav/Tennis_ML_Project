@@ -2,10 +2,11 @@ import streamlit as st
 import pandas as pd
 import requests
 
+
 # Function to parse the age range
 def parse_age_range(age_range):
     if age_range == '- 20':
-        return 0, 20
+        return 14, 20
     elif age_range == '41 +':
         return 41, 65
     else:
@@ -95,8 +96,6 @@ best_of = st.selectbox(
 if st.button("🏁 Start Match"):
     if player_1 != "Select Player" and player_2 != "Select Player":
         params = {
-            # "player_1_name": player_1,
-            # "player_2_name": player_2,
             "player_1_age": age1,
             "player_2_age": age2,
             "round": round,
@@ -120,7 +119,17 @@ if st.button("🏁 Start Match"):
         tennis_api_url = 'http://localhost:8000/predict'
         response = requests.get(tennis_api_url, params=params)
         result = response.json()
+        del round
+        prob = round(result[1] * 100, 2)
+        test = ""
 
-        st.write(result)
+        if result[0] == "Player 2 wins":
+            test = f"{player_2[9:]} wins with {prob}%"
+        elif result[0] == "Player 1 wins":
+            test = f"{player_1[9:]} wins with {prob}%"
+        else:
+            test = "Draw"
+
+        st.success(test)
     else:
         st.error("Please select both players before starting the match.")
