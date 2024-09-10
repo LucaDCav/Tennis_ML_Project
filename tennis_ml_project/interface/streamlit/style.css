@@ -1,0 +1,19 @@
+.custom-selectbox {
+  border: 2px solid #4CAF50;
+  border-radius: 5px;
+  padding: 5px;
+  background-color: #f8f8f8;
+}
+
+.custom-selectbox select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  color: navy; /* Cor das fontes */
+  background-color: #ffffff; /* Cor de fundo do selectbox */
+}
+
+.custom-selectbox option {
+  color: navy; /* Cor das fontes para opções */
+}
