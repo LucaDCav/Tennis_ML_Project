@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
+import os
 
 
 # Function to parse the age range
@@ -13,7 +14,10 @@ def parse_age_range(age_range):
         return map(int, age_range.split('~'))
 
 # Read the CSV file (modify the path if necessary)
-df = pd.read_csv("player_df.csv")
+current_dir = os.path.dirname(os.path.abspath(__file__))
+csv_path = os.path.join(current_dir, 'player_df.csv')
+
+df = pd.read_csv(csv_path)
 df[['age_min', 'age_max']] = df['age'].apply(lambda x: pd.Series(parse_age_range(x)))
 
 # Configure the page (title and icon)
