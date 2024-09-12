@@ -30,7 +30,7 @@ def load_css(filename):
     return css
 
 # Load the CSS
-css = load_css("./style.css")
+css = load_css("style.css")
 st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
 # Title with emojis
