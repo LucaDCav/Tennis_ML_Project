@@ -126,12 +126,12 @@ if st.button("🏁 Start Match"):
         response = requests.get(tennis_api_url, params=params)
         result = response.json()
         del round
-        prob = round(result[1] * 100, 2)
+        prob = round(result["probability"] * 100, 2)
         test = ""
 
-        if result[0] == "Player 2 wins":
+        if result['winner'] == "Player 2":
             test = f"{player_2[9:]} wins with {prob}%"
-        elif result[0] == "Player 1 wins":
+        elif result['winner'] == "Player 1":
             test = f"{player_1[9:]} wins with {prob}%"
         else:
             test = "Draw"

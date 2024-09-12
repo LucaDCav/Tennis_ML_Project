@@ -59,25 +59,14 @@ def predict(
     loaded_model = pickle.load(open(filename, 'rb'))
     result = loaded_model.predict_proba(X_pred)
 
-
-    # ⚠️ fastapi only accepts simple Python data types as a return value
-    # among them dict, list, str, int, float, bool
-    # in order to be able to convert the api response to JSON
-
     if float(result[0][0]) > float(result[0][1]):
-        player = "Player 2 wins"
-        prob = float(result[0][0])
-        return player, prob
-
-    if float(result[0][0]) < float(result[0][1]):
-        player = "Player 1 wins"
-        prob = float(result[0][1])
-        return player, prob
+        return {"winner": "Player 2", "probability": float(result[0][0])}
+    elif float(result[0][0]) < float(result[0][1]):
+        return {"winner": "Player 1", "probability": float(result[0][1])}
     else:
-        return "Draw"
+        return {"result": "Draw"}
 
     # $CHA_END
-
 
 @app.get("/")
 def root():
