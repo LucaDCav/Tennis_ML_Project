@@ -4,6 +4,7 @@ import pickle
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+
 app = FastAPI()
 
 # Allowing all middleware is optional, but good practice for dev purposes
@@ -24,7 +25,6 @@ app.add_middleware(
 
 # $WIPE_END
 
-# http://127.0.0.1:8000/predict?pickup_datetime=2014-07-06+19:18:00&pickup_longitude=-73.950655&pickup_latitude=40.783282&dropoff_longitude=-73.984365&dropoff_latitude=40.769802&passenger_count=2
 @app.get("/predict")
 def predict(
         player_1_age,
@@ -63,7 +63,19 @@ def predict(
     # ⚠️ fastapi only accepts simple Python data types as a return value
     # among them dict, list, str, int, float, bool
     # in order to be able to convert the api response to JSON
-    return dict(loser=float(result[0][0]), winner= float(result[0][1]))
+
+    if float(result[0][0]) > float(result[0][1]):
+        player = "Player 2 wins"
+        prob = float(result[0][0])
+        return player, prob
+
+    if float(result[0][0]) < float(result[0][1]):
+        player = "Player 1 wins"
+        prob = float(result[0][1])
+        return player, prob
+    else:
+        return "Draw"
+
     # $CHA_END
 
 
