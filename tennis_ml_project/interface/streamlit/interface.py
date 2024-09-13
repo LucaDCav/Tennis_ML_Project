@@ -32,11 +32,12 @@ def predict(
 
     BUCKET_NAME = "tennis_ml_bucket"
 
+    client = storage.Client.create_anonymous_client()
+    bucket = client.bucket(bucket_name=BUCKET_NAME, user_project=None)
+
     storage_filename = "finalized_model.sav"
     local_filename = "finalized_model.sav"
 
-    client = storage.Client()
-    bucket = client.bucket(BUCKET_NAME)
     blob = bucket.blob(storage_filename)
     blob.download_to_filename(local_filename)
 
