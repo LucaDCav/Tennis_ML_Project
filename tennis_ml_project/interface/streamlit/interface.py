@@ -2,6 +2,59 @@ import streamlit as st
 import pandas as pd
 import requests
 import os
+import pickle
+from google.cloud import storage
+
+
+def predict(
+        player_1_age,
+        player_2_age,
+        round,
+        surface,
+        minutes,
+        draw_size,
+        best_of,
+        player_1_ht,
+        player_2_ht,
+        player_1_df,
+        player_2_df,
+        player_1_hand,
+        player_2_hand,
+        player_1_ace,
+        player_2_ace,
+        player_1_bpSaved,
+        player_2_bpSaved,
+        age_diff,
+        ht_diff
+    ):
+
+    # $CHA_BEGIN
+
+    BUCKET_NAME = "tennis_ml_bucket"
+
+    storage_filename = "finalized_model.sav"
+    local_filename = "finalized_model.sav"
+
+    client = storage.Client()
+    bucket = client.bucket(BUCKET_NAME)
+    blob = bucket.blob(storage_filename)
+    blob.download_to_filename(local_filename)
+
+    X_pred = pd.DataFrame(locals(), index=[0])
+
+    print(X_pred)
+
+    # load the model from disk
+    filename = 'finalized_model.sav'
+    loaded_model = pickle.load(open(filename, 'rb'))
+    result = loaded_model.predict_proba(X_pred)
+
+    if float(result[0][0]) > float(result[0][1]):
+        return {"winner": "Player 2", "probability": float(result[0][0])}
+    elif float(result[0][0]) < float(result[0][1]):
+        return {"winner": "Player 1", "probability": float(result[0][1])}
+    else:
+        return {"result": "Draw"}
 
 
 # Function to parse the age range
@@ -122,20 +175,38 @@ if st.button("🏁 Start Match"):
             'age_diff': abs(age2 - age1),
             'ht_diff': abs(float(df[df["player"] == player_2]['height'].iloc[0]) - float(df[df["player"] == player_1]['height'].iloc[0]))
         }
-        tennis_api_url = 'http://localhost:8000/predict'
-        response = requests.get(tennis_api_url, params=params)
-        result = response.json()
+        result = predict(
+            player_1_age = age1,
+            player_2_age = age2,
+            round = round,
+            surface = surface,
+            minutes = minutes,
+            draw_size = draw_size,
+            best_of = best_of,
+            player_1_ht = float(df[df["player"] == player_1]['height'].iloc[0]),
+            player_2_ht = float(df[df["player"] == player_2]['height'].iloc[0]),
+            player_1_df = float(df[(df["player"] == player_1) & (df['age_min'] <= age1) & (age1 <= df['age_max'])]['df'].iloc[0]),
+            player_2_df = float(df[(df["player"] == player_2) & (df['age_min'] <= age2) & (age2 <= df['age_max'])]['df'].iloc[0]),
+            player_1_hand = df[df["player"] == player_1]['hand'].iloc[0],
+            player_2_hand = df[df["player"] == player_2]['hand'].iloc[0],
+            player_1_ace = float(df[(df["player"] == player_1) & (df['age_min'] <= age1) & (age1 <= df['age_max'])]['ace'].iloc[0]),
+            player_2_ace = float(df[(df["player"] == player_2) & (df['age_min'] <= age2) & (age2 <= df['age_max'])]['ace'].iloc[0]),
+            player_1_bpSaved = float(df[(df["player"] == player_1) & (df['age_min'] <= age1) & (age1 <= df['age_max'])]['bpSaved'].iloc[0]),
+            player_2_bpSaved = float(df[(df["player"] == player_2) & (df['age_min'] <= age2) & (age2 <= df['age_max'])]['bpSaved'].iloc[0]),
+            age_diff = abs(age2 - age1),
+            ht_diff = abs(float(df[df["player"] == player_2]['height'].iloc[0]) - float(df[df["player"] == player_1]['height'].iloc[0]))
+        )
         del round
         prob = round(result["probability"] * 100, 2)
-        test = ""
+        prediction_result = ""
 
         if result['winner'] == "Player 2":
-            test = f"{player_2[9:]} wins with {prob}%"
+            prediction_result = f"Player 2: {player_2[9:]} wins with {prob}%"
         elif result['winner'] == "Player 1":
-            test = f"{player_1[9:]} wins with {prob}%"
+            prediction_result = f"Player 1: {player_1[9:]} wins with {prob}%"
         else:
-            test = "Draw"
+            prediction_result = "Draw"
 
-        st.success(test)
+        st.success(prediction_result)
     else:
         st.error("Please select both players before starting the match.")
